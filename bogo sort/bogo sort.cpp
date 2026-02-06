@@ -30,6 +30,7 @@ int* sort_list(int* arr, int size, bool* kill) {
     memcpy(copy, arr, size * sizeof(int));
     while (!check_sorted(copy, size)) {
         if (*kill) {
+            delete[] copy;
             return nullptr;
         }
         std::random_shuffle(&copy[0], &copy[size]);
@@ -51,7 +52,7 @@ int main()
     std::string input = "c";
     while (input != "x") {
 
-        const int ARR_SIZE = 100;
+        const int ARR_SIZE = 8;
         std::random_device dev;
         std::mt19937 rng(dev());
         std::uniform_int_distribution<std::mt19937::result_type> rand(1, 100);
@@ -79,6 +80,8 @@ int main()
                 std::cout << "A future was ready" << std::endl;
                 std::cout << "Sorted array" << std::endl;
                 print_array(sorted, ARR_SIZE);
+                delete[] sorted;
+                delete[] futures;
                 break;
             }
         } 
