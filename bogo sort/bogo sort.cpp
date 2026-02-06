@@ -25,10 +25,12 @@ void print_array(int* arr, int size) {
 }
 
 
-int* sort_list(int* arr, int size, bool* kill) {
+int* sort_list(int* arr, int size, bool* kill, int* stats) {
     int* copy = new int[size];
+    *stats = 0;
     memcpy(copy, arr, size * sizeof(int));
     while (!check_sorted(copy, size)) {
+        *stats = *stats + 1;
         if (*kill) {
             delete[] copy;
             return nullptr;
@@ -47,12 +49,20 @@ int any_futures_ready(std::future<int*>* futures, int size) {
     return -1;
 }
 
+int sum_array(int* arr, int size) {
+    int ret = 0;
+    for (int i = 0; i < size; i++) {
+        ret += arr[i];
+    }
+    return ret;
+}
+
 int main()
 {
     std::string input = "c";
     while (input != "x") {
 
-        const int ARR_SIZE = 8;
+        const int ARR_SIZE = 11;
         std::random_device dev;
         std::mt19937 rng(dev());
         std::uniform_int_distribution<std::mt19937::result_type> rand(1, 100);
@@ -68,8 +78,9 @@ int main()
         bool kill = false;
         const int CPUS = std::thread::hardware_concurrency();
         std::future<int*>* futures = new std::future<int*>[CPUS];
+        int* stats = new int[CPUS];
         for (int i = 0; i < CPUS; i++) {
-            futures[i] = std::async(std::launch::async, sort_list, arr, ARR_SIZE, &kill);
+            futures[i] = std::async(std::launch::async, sort_list, arr, ARR_SIZE, &kill, &stats[i]);
         }
 
         while (true) {
@@ -77,13 +88,17 @@ int main()
             if (res != -1) {
                 int* sorted = futures[res].get();
                 kill = true;
-                std::cout << "A future was ready" << std::endl;
                 std::cout << "Sorted array" << std::endl;
                 print_array(sorted, ARR_SIZE);
+                std::cout << "Total iterations: " << sum_array(stats, CPUS) << std::endl;
+                std::cout << "Iterations per thread: " << std::endl;
+                print_array(stats, CPUS);
                 delete[] sorted;
                 delete[] futures;
+                delete[] stats;
                 break;
             }
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         } 
         
         std::cout << "Press x to end" << std::endl;
