@@ -62,7 +62,7 @@ int main()
     std::string input = "c";
     while (input != "x") {
 
-        const int ARR_SIZE = 11;
+        const int ARR_SIZE = 9;
         std::random_device dev;
         std::mt19937 rng(dev());
         std::uniform_int_distribution<std::mt19937::result_type> rand(1, 100);
